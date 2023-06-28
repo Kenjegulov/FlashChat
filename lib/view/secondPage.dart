@@ -1,9 +1,7 @@
-import 'dart:js_interop';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_lesson12/models/Controllers.dart';
 import 'package:flutter_lesson12/services/ChatAppService.dart';
-import 'package:flutter_lesson12/view/home.dart';
 
 class SecondPage extends StatefulWidget {
   const SecondPage({super.key});
@@ -13,27 +11,10 @@ class SecondPage extends StatefulWidget {
 }
 
 class _SecondPageState extends State<SecondPage> {
-  bool isCopleted = false;
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _authorController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final db = FirebaseFirestore.instance;
-
-  Future<void> read() async {
-    // ChatAppService ob = ChatAppService();
-    // ob.read();
-    await db.collection("ChatApp").get().then((event) {
-      for (var doc in event.docs) {
-        print("${doc.id} => ${doc.data()}");
-      }
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-    read();
   }
 
   @override
@@ -49,7 +30,7 @@ class _SecondPageState extends State<SecondPage> {
           child: Column(
             children: [
               TextFormField(
-                controller: _titleController,
+                controller: Controller.titleController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Error, title is empty";
@@ -65,7 +46,7 @@ class _SecondPageState extends State<SecondPage> {
               const SizedBox(height: 10),
               TextFormField(
                 maxLines: 8,
-                controller: _descriptionController,
+                controller: Controller.descriptionController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Error, description is empty";
@@ -79,18 +60,18 @@ class _SecondPageState extends State<SecondPage> {
                 ),
               ),
               CheckboxListTile(
-                value: isCopleted,
+                value: Controller.isCompleted,
                 onChanged: (v) {
                   setState(
                     () {
-                      isCopleted = v!;
+                      Controller.isCompleted = v!;
                     },
                   );
                 },
               ),
               const SizedBox(height: 10),
               TextFormField(
-                controller: _authorController,
+                controller: Controller.authorController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Error, author is empty";
@@ -106,14 +87,27 @@ class _SecondPageState extends State<SecondPage> {
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (c) => const ChatApp(),
-                      ),
-                    );
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return SimpleDialog(
+                            backgroundColor: Colors.white.withOpacity(0.8),
+                            title: const Text(
+                              "Сиздин маалыматыныз жуктолуудо",
+                              textAlign: TextAlign.center,
+                            ),
+                            children: [
+                              CupertinoActivityIndicator(
+                                radius: 20,
+                                color: Colors.blue.withOpacity(0.8),
+                              )
+                            ],
+                          );
+                        });
+                    await ChatAppService.add();
+                    Navigator.popUntil(context, (route) => route.isFirst);
                   } else {
                     null;
                   }
