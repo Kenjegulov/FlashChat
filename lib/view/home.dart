@@ -69,6 +69,7 @@ class ChatAppState extends State<ChatApp> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+          tooltip: "Model",
           backgroundColor: Colors.purple,
           onPressed: () {
             Navigator.push(
